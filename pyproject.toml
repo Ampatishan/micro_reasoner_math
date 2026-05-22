@@ -1,0 +1,16 @@
+[project]
+name = "micro-reasoner-math"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "accelerate>=1.13.0",
+    "datasets>=4.8.5",
+    "peft>=0.19.1",
+    "torch>=2.12.0",
+    "transformers>=5.9.0",
+    "trl>=1.4.0",
+    "vllm>=0.2.5",
+    "wandb>=0.26.1",
+]
