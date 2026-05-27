@@ -33,7 +33,7 @@ def is_verifiable(example: Dict[str, Any]) -> bool:
     answer = extract_boxed_answer(example.get("solution", ""))
     return answer is not None
 
-def format_as_messages(example: Dict[str, Any]) -> Dict[str, Any]:
+def format_as_messages(example: dict) -> dict:
     answer = extract_boxed_answer(example.get("solution", ""))
     return {
         "messages": [
@@ -41,27 +41,19 @@ def format_as_messages(example: Dict[str, Any]) -> Dict[str, Any]:
             {"role": "user", "content": example.get("problem", "")},
             {
                 "role": "assistant",
-                "content": f"<think>\n{example.get('solution', '')}\n</think>\n\nThe answer is $\\boxed{{{answer}}}$",
+                "content": f"<think>\n{example.get('solution', '')}\n</think>\n\nThe answer is $\\boxed{{{answer}}}$"
             },
-        ]
+        ],
+        "answer": answer,       
+        "problem": example.get("problem", "")   
     }
-
-def format_for_sft(example: Dict[str, Any]) -> Dict[str, Any]:
-    answer = extract_boxed_answer(example.get("solution", ""))
-
-    return {
-        "prompt": SYSTEM_PROMPT + "\n\nProblem: " + example.get("problem", ""),
-        "completion": f"<think>\n{example.get('solution', '')}\n</think>\n\nThe answer is $\\boxed{{{answer}}}$",
-        "answer": answer,
-    }
-
 
 if __name__ == "__main__":
     
     dataset = load_dataset("AI-MO/NuminaMath-CoT", split="train")
     # Filter dataset
     filtered = dataset.filter(is_verifiable, num_proc=4)
-    formatted = filtered.map(format_for_sft, num_proc=4)
+    formatted = filtered.map(format_as_messages, num_proc=4)
 
     # Take 100K subset for SFT — no need for all 836K
     sft_dataset = formatted.shuffle(seed=42).select(range(100_000))
