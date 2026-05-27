@@ -29,9 +29,18 @@ def train(model, dataset, training_args, tokenizer):
         model=model,
         args=training_args,
         train_dataset=dataset,
+        processing_class=tokenizer,
     )
 
     trainer.train()
+
+def apply_chat_template(example):
+    text = tokenizer.apply_chat_template(
+        example["messages"],
+        tokenize=False,          
+        add_generation_prompt=False
+    )
+    return {"text": text}
 
 if __name__ == "__main__":
 
@@ -57,9 +66,11 @@ if __name__ == "__main__":
         save_steps=500,
         fp16=True,
         report_to="none",
+        dataset_text_field="text",
     )
 
     sft_dataset = load_from_disk('./sft_dataset')
+    sft_dataset = sft_dataset.map(apply_chat_template, num_proc=24)
 
     tokenizer, model = load_model(model_name, lora_config)
     train(model, sft_dataset, training_args, tokenizer)
